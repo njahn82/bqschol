@@ -1,14 +1,14 @@
 Package: bqschol
-Title: What the Package Does (One Line, Title Case)
+Title: Access SUB Göttingen Big Scholarly Data 
 Version: 0.0.0.9000
 Authors@R: 
-    c(person(given = "First",
-             family = "Last",
+    c(person(given = "Najko",
+             family = "Jahn",
              role = c("aut", "cre"),
-             email = "first.last@example.com",
-             comment = c(ORCID = "YOUR-ORCID-ID")),
-      person(family = "Najko Jahn"))
-Description: What the package does (one paragraph).
+             email = "najko.jahn@sub.uni-goettingen.de",
+             comment = c(ORCID = "YOUR-ORCID-ID")))
+Description: Database client for SUB Göttingen Big Scholarly Data
+	stored on Google Big Query.
 License: MIT + file LICENSE
 Encoding: UTF-8
 LazyData: true
@@ -16,3 +16,10 @@ Roxygen: list(markdown = TRUE)
 RoxygenNote: 7.1.1
 URL: https://github.com/njahn82/bqschol
 BugReports: https://github.com/njahn82/bqschol/issues
+Suggests: 
+    testthat (>= 3.0.0)
+Config/testthat/edition: 3
+Imports: 
+    DBI,
+    bigrquery,
+    dplyr

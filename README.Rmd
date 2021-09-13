@@ -1,0 +1,102 @@
+---
+output: github_document
+---
+
+<!-- README.md is generated from README.Rmd. Please edit that file -->
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>",
+  fig.path = "man/figures/README-",
+  out.width = "100%"
+)
+```
+
+# bqschol
+
+<!-- badges: start -->
+<!-- badges: end -->
+
+The goal of bqschol is to provide an interface to SUB Göttingen's 
+big scholarly datasets stored on Google Big Query.
+
+This package is of internal use.
+
+## Installation
+
+You can install the development version from [GitHub](https://github.com/) with:
+
+``` r
+# install.packages("remotes")
+remotes::install_github("njahn82/bqschol")
+```
+## Initialize the connection
+
+Connect to dataset with Unpaywall snapshots
+
+```{r}
+library(bqschol)
+my_con <- bqschol::bgschol_con(
+  dataset = "cr_history",
+  path = "~/hoad-private-key.json")
+```
+
+You need to have a service account token to make use of this 
+package!
+
+
+## Table functions
+
+The package provides wrapper for the most common table operations
+
+* `bgschol_list()`: List tables
+* `bgschol_tbl()`: Access tables with
+* `bgschol_query()`: Perform of a SQL query and retrieve results
+* `bgschol_execute()`: Execute a SQL query on the database
+
+Let's start by listing all Crossref snapshots on SUB Göttingen's
+Big Query project
+
+```{r}
+bgschol_list(my_con)
+```
+
+We can determine the top publisher by type as of April 2018.
+Note that we only stored Crossref records published later than
+2007.
+
+```{r}
+cr_instant_df <- bgschol_tbl(my_con, table = "cr_apr18")
+cr_instant_df %>%
+    #top publishers
+    dplyr::group_by(publisher) %>%
+    dplyr::summarise(n = dplyr::n_distinct(doi)) %>%
+    dplyr::arrange(desc(n)) 
+```
+
+
+
+For more complex tasks, we use SQL. 
+
+```{r}
+cc_query <- c("SELECT
+  publisher,
+  COUNT(DISTINCT(DOI)) AS n
+FROM
+  `api-project-764811344545.cr_history.cr_apr18`,
+  UNNEST(license) AS license
+WHERE
+  REGEXP_CONTAINS(license.URL, 'creativecommons')
+GROUP BY
+  publisher
+ORDER BY
+  n DESC
+LIMIT
+  10")
+bgschol_query(my_con, cc_query)
+```
+
+`bgschol_execute()` is when new tables shall be created or dropped in
+Big Query.
+

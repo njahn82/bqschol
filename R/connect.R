@@ -1,10 +1,10 @@
 #' Create connection
 #'
-#' Authorization is only possible through a service account token. 
+#' Authorization is only possible through a service account token.
 #' The toke can be requested from Najko
 #' <mailto:najko.jahn@sub.uni-goettingen.de>
 #'
-#' @param dataset big scholarly datasets. Currently the 
+#' @param dataset big scholarly datasets. Currently the
 #'  following datasets are availabe:
 #'  - *cr_instant* Most recent monthly Crossref metadata snapshot,
 #'    comprising metadata about journal articles published since 2008.
@@ -13,19 +13,22 @@
 #'  - *oadoi_full* Unpaywall metadata since 2008.
 #'
 #' @param path Path to JSON identifying the associated service account.
+#' @param project Specify bigquery project to connect to.
 #' @export
-bgschol_con <- function(dataset = "cr_instant", path = NULL) {
+bgschol_con <- function(dataset = "cr_instant", path = NULL, project = NULL) {
     # authorize through service account
     bgschol_auth(path = path)
+    # specify project
+    project <- bgschol_project_id(project)
     # check if dataset is available
     stopifnot(
         bigrquery::bq_dataset_exists(
-            bgschol_dataset(dataset = dataset)
+            bgschol_dataset(dataset = dataset, project = project)
             )
         )
     # create DBI connection
     DBI::dbConnect(bigrquery::bigquery(),
-                   project = bgschol_project_id(),
+                   project = bgschol_project_id(project),
                    dataset = dataset)
 }
 
@@ -54,12 +57,12 @@ bgschol_service_account <- function() "~/hoad-private-key.json"
 #' Database project
 #'
 #' @noRd
-bgschol_project_id <- function() "api-project-764811344545"
+bgschol_project_id <- function(project = NULL) ifelse(is.null(project), "api-project-764811344545", project)
 
 #' Create reference to Big Query datasets.
 #'
 #' @noRd
-bgschol_dataset <- function(project = bgschol_project_id(),
+bgschol_dataset <- function(project = bgschol_project_id(project),
     dataset = dataset) {
-    bigrquery::bq_dataset(bgschol_project_id(), dataset = dataset)
+    bigrquery::bq_dataset(project, dataset = dataset)
 }
